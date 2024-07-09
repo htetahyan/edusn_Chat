@@ -76,9 +76,9 @@ class _LoginPageState extends State<LoginPage> {
                             rememberMe = value;
                           });
                         }),
-                    Text("Remember me"),
-                    Spacer(),
-                    Text(
+                    const Text("Remember me"),
+                    const Spacer(),
+                    const Text(
                       "forgot password?",
                       style: TextStyle(color: Color(0xFF7F265B)),
                     )
