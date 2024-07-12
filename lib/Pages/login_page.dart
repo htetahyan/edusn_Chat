@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_edusn/Pages/chat_page.dart';
+import 'package:flutter_edusn/Pages/available_page.dart';
+
 import 'package:flutter_edusn/Pages/register_page.dart';
 import 'package:flutter_edusn/constants/widgets.dart';
 
@@ -87,8 +88,10 @@ class _LoginPageState extends State<LoginPage> {
                 kLoginButton(
                   ontap: () {
                     setState(() {
-                      Navigator.pushReplacement(context,
-                          MaterialPageRoute(builder: (context) => ChatPage()));
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AvailablePage()));
                     });
                   },
                   title: "Login",

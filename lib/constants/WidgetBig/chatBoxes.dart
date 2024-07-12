@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_edusn/Providers/chat_provider.dart';
 import 'package:flutter_edusn/constants/sizes.dart';
-import 'package:jiffy/jiffy.dart';
+
+import 'package:provider/provider.dart';
 
 class Chatboxes extends StatefulWidget {
   final String text;
@@ -29,22 +31,20 @@ class Chatboxes extends StatefulWidget {
 }
 
 class _ChatboxesState extends State<Chatboxes> {
-  String? minsago;
   late Timer _timer;
-
   @override
   void initState() {
     super.initState();
-    _updateTimeAgo();
-    _timer = Timer.periodic(Duration(minutes: 1), (timer) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateTimeAgo();
+      _timer = Timer.periodic(Duration(minutes: 1), (timer) {
+        _updateTimeAgo();
+      });
     });
   }
 
   void _updateTimeAgo() {
-    setState(() {
-      minsago = Jiffy(widget.crdt).fromNow();
-    });
+    context.read<ChatProvider>().updateTimeAgo(widget.crdt);
   }
 
   @override
@@ -55,6 +55,7 @@ class _ChatboxesState extends State<Chatboxes> {
 
   @override
   Widget build(BuildContext context) {
+    String? minsAgo = context.watch<ChatProvider>().minsago;
     Widget avatar;
     if (!widget.isMe) {
       avatar = Image.asset(
@@ -73,7 +74,7 @@ class _ChatboxesState extends State<Chatboxes> {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 17.0),
+      padding: const EdgeInsets.symmetric(vertical: 17),
       child: Column(
           mainAxisAlignment:
               widget.isMe ? MainAxisAlignment.start : MainAxisAlignment.end,
@@ -98,36 +99,42 @@ class _ChatboxesState extends State<Chatboxes> {
                     color: widget.isMe
                         ? const Color(0xFFE8E8E8)
                         : const Color(0xFF183861),
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          left: 20, top: 10, bottom: 10, right: 10),
-                      child: Column(
-                        children: [
-                          if (widget.images != null &&
-                              widget.images!.isNotEmpty)
-                            Column(
-                              children: widget.images!.map((image) {
-                                return Container(
-                                  width: 150,
-                                  height: 200,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: Image.file(
-                                      image,
-                                      fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          Text(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (widget.images != null && widget.images!.isNotEmpty)
+                          Column(
+                            children: widget.images!.map((image) {
+                              return ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.7,
+                                  maxHeight: 350,
+                                ),
+                                child: Image.file(
+                                  image,
+                                  fit: BoxFit.fill,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 17),
+                          child: Text(
+                            textAlign: TextAlign.left,
                             widget.text,
                             style: TextStyle(
                                 color:
                                     widget.isMe ? Colors.black : Colors.white),
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -144,7 +151,7 @@ class _ChatboxesState extends State<Chatboxes> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   messageInfo(
-                    text: minsago.toString(),
+                    text: minsAgo.toString(),
                     icon: Icons.access_time,
                   ),
                   const SizedBox(
